@@ -48,30 +48,37 @@ st.markdown("### Tasks")
 st.caption("Add a few tasks. In your final version, these should feed into your scheduler.")
 
 if "owner" not in st.session_state:
-    st.session_state.owner = Owner("Fatima")
+    st.session_state.owner = Owner(owner_name)
 
 if "scheduler" not in st.session_state:
     st.session_state.scheduler = Scheduler(st.session_state.owner)
 
-if "tasks" not in st.session_state:
-    st.session_state.tasks = []
+if "pet" not in st.session_state:
+    st.session_state.pet = Pet(pet_name, species)
+    st.session_state.owner.add_pet(st.session_state.pet)
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     task_title = st.text_input("Task title", value="Morning walk")
 with col2:
-    duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
+    task_time = st.time_input("Time")
 with col3:
+    duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
+with col4:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
 
 if st.button("Add task"):
-    st.session_state.tasks.append(
-        {"title": task_title, "duration_minutes": int(duration), "priority": priority}
-    )
+    new_task = Task(task_title, task_time.strftime("%H:%M"), int(duration), priority, "daily")
+    st.session_state.pet.add_task(new_task)
 
-if st.session_state.tasks:
+current_tasks = st.session_state.pet.get_tasks()
+if current_tasks:
     st.write("Current tasks:")
-    st.table(st.session_state.tasks)
+    st.table([{
+        "Title": t.description,
+        "Duration": f"{t.duration_minutes} min",
+        "Priority": t.priority
+    } for t in current_tasks])
 else:
     st.info("No tasks yet. Add one above.")
 
